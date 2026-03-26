@@ -1416,6 +1416,7 @@ function renderAutoPanel() {
       </div>
       <div style="font-size:0.75rem;color:var(--text-tertiary);margin-top:8px;text-align:center">💡 Разовые работы не участвуют в автографике</div>
     </div>
+    <button class="auto-apply-btn" id="autoRotateBtn" style="margin-bottom:12px;background:linear-gradient(135deg,#FF9500,#FF6B00)">🔄 Чередование всех работ</button>
     <button class="auto-apply-btn" id="autoApplyBtn" ${!STATE.autoStrategy?'disabled':''}>Применить ✓</button>`;
 
   c.querySelector('#stratGrid').addEventListener('click', e => {
@@ -1441,6 +1442,26 @@ function renderAutoPanel() {
     applyStrategy(STATE.days, STATE.autoStrategy, wt);
     closeDrawer(); renderAll(); saveState(); saveAllMonths();
     showToast('Автографик применен 🗓');
+  });
+  
+  document.getElementById('autoRotateBtn').addEventListener('click', () => {
+    // Rotate through ALL work types (including onetime)
+    const wtIds = STATE.workTypes.map(w => w.id);
+    if (wtIds.length < 2) {
+      showToast('Нужно минимум 2 типа работ!');
+      return;
+    }
+    
+    let idx = 0;
+    STATE.days.forEach(day => {
+      if (day.type && day.type !== 'none' && day.type !== 'off') {
+        day.type = wtIds[idx % wtIds.length];
+        idx++;
+      }
+    });
+    
+    closeDrawer(); renderAll(); saveState(); saveAllMonths();
+    showToast(`Чередование: ${wtIds.length} работ 🔄`);
   });
 }
 
@@ -1859,35 +1880,32 @@ function initEvents() {
 let authMode = 'login';
 
 function initAuthEvents() {
-  const loginBtn = document.getElementById('loginBtn');
   const authModal = document.getElementById('authModal');
-  const authForm = document.getElementById('authForm');
-  const authTabs = document.querySelectorAll('.auth-tab');
-  const nameGroup = document.getElementById('nameGroup');
   
   // Auth state listener
   onAuthChange((user) => {
     updateProfileUI(user);
   });
   
-  // Open auth modal
-  if (loginBtn) {
-    loginBtn.addEventListener('click', () => {
+  // Use event delegation for dynamically created buttons
+  document.addEventListener('click', (e) => {
+    // Login/Logout button in profile section
+    if (e.target.closest('#loginBtn') || e.target.closest('#logoutBtn')) {
       if (isLoggedIn()) {
         showLogoutConfirm();
       } else {
         openAuthModal();
       }
-    });
-  }
-  
-  // Auth tabs
-  authTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      authTabs.forEach(t => t.classList.remove('active'));
+    }
+    
+    // Auth tabs
+    if (e.target.closest('.auth-tab')) {
+      const tab = e.target.closest('.auth-tab');
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       authMode = tab.dataset.tab;
       
+      const nameGroup = document.getElementById('nameGroup');
       if (authMode === 'register') {
         nameGroup.style.display = 'block';
         document.getElementById('authModalTitle').textContent = '📝 Регистрация';
@@ -1898,40 +1916,39 @@ function initAuthEvents() {
         document.getElementById('authSubmit').textContent = 'Войти';
       }
       document.getElementById('authError').textContent = '';
-    });
+    }
   });
   
   // Auth form submit
-  if (authForm) {
-    authForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value;
-      const name = document.getElementById('authName').value.trim();
-      const errorEl = document.getElementById('authError');
-      
-      errorEl.textContent = '⏳ Загрузка...';
-      
-      if (authMode === 'login') {
-        const result = await login(email, password);
-        if (result.success) {
-          closeAuthModal();
-          showToast('Добро пожаловать! 👋');
-        } else {
-          errorEl.textContent = result.error || 'Ошибка входа';
-        }
+  document.addEventListener('submit', async (e) => {
+    if (!e.target.closest('#authForm')) return;
+    e.preventDefault();
+    
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const name = document.getElementById('authName').value.trim();
+    const errorEl = document.getElementById('authError');
+    
+    errorEl.textContent = '⏳ Загрузка...';
+    
+    if (authMode === 'login') {
+      const result = await login(email, password);
+      if (result.success) {
+        closeAuthModal();
+        showToast('Добро пожаловать! 👋');
       } else {
-        const result = await register(email, password, name);
-        if (result.success) {
-          closeAuthModal();
-          showToast('Аккаунт создан! 🎉');
-        } else {
-          errorEl.textContent = result.error || 'Ошибка регистрации';
-        }
+        errorEl.textContent = result.error || 'Ошибка входа';
       }
-    });
-  }
+    } else {
+      const result = await register(email, password, name);
+      if (result.success) {
+        closeAuthModal();
+        showToast('Аккаунт создан! 🎉');
+      } else {
+        errorEl.textContent = result.error || 'Ошибка регистрации';
+      }
+    }
+  });
   
   // Close modal on overlay click
   if (authModal) {
@@ -1942,8 +1959,11 @@ function initAuthEvents() {
   
   // Escape to close
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && authModal.classList.contains('visible')) {
-      closeAuthModal();
+    if (e.key === 'Escape') {
+      const authModal = document.getElementById('authModal');
+      if (authModal && authModal.classList.contains('visible')) {
+        closeAuthModal();
+      }
     }
   });
 }
