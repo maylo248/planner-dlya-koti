@@ -1268,14 +1268,6 @@ async function openDrawer(panel) {
   document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
   const map = { charts:'dockCharts', income:'dockIncome', expenses:'dockExpenses', auto:'dockAuto', settings:'dockSettings' };
   if (map[panel]) document.getElementById(map[panel])?.classList.add('active');
-  
-  // Update profile UI after drawer is open
-  if (panel === 'settings') {
-    // Wait for DOM to settle
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    const user = await getCurrentUser();
-    updateProfileUI(user);
-  }
 }
 
 function closeDrawer() {
@@ -2146,9 +2138,18 @@ function updateProfileUI(user) {
   const actions = document.getElementById('profileActions');
   const header = document.getElementById('profileHeader');
   
-  // Only update if drawer is open
+  // Always store the last known user for when drawer opens
+  if (user) {
+    window.lastKnownUser = user;
+  } else {
+    window.lastKnownUser = null;
+  }
+  
+  // If drawer is not open, just store and return
   const drawer = document.getElementById('drawer');
   if (!drawer || !drawer.classList.contains('open')) return;
+  
+  // Check if all elements exist
   if (!avatar || !name || !email || !actions || !header) return;
   
   // Get saved avatar

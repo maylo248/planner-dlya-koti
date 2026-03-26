@@ -30,9 +30,7 @@ async function initFirebase() {
     
     // Listen to auth state changes
     firebaseOnAuthStateChanged(auth, (user) => {
-      // Never overwrite valid user with null from Firebase
-      if (!user && currentUser) return;
-      
+      // Always sync currentUser with Firebase state
       currentUser = user ? {
         uid: user.uid,
         email: user.email,
@@ -58,21 +56,20 @@ export async function waitForAuth() {
   await initPromise;
 }
 
-// Get current user - check Firebase directly if available
+// Get current user - ALWAYS check Firebase first when configured
 export async function getCurrentUser() {
+  // If Firebase is configured and ready, check Firebase directly
   if (isConfigured && auth && firebaseReady) {
-    try {
-      const { getIdToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-      const token = await getIdToken(auth.currentUser, false).catch(() => null);
-      if (token) {
-        return {
-          uid: auth.currentUser.uid,
-          email: auth.currentUser.email,
-          displayName: auth.currentUser.displayName
-        };
-      }
-    } catch (e) {}
+    const user = auth.currentUser;
+    if (user) {
+      return {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || user.email?.split('@')[0] || 'Пользователь'
+      };
+    }
   }
+  // Fall back to local currentUser (for local auth or if Firebase not ready)
   return currentUser;
 }
 
