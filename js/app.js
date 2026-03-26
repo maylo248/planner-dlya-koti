@@ -2061,6 +2061,9 @@ function updateProfileUI(user) {
   const actions = document.getElementById('profileActions');
   const header = document.getElementById('profileHeader');
   
+  // If elements don't exist yet, skip
+  if (!avatar || !name || !email || !actions || !header) return;
+  
   if (user) {
     avatar.textContent = '👤';
     name.textContent = user.displayName || user.email?.split('@')[0] || 'Пользователь';
