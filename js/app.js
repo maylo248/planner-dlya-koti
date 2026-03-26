@@ -1556,7 +1556,7 @@ function renderSettingsPanel() {
           <div class="profile-email" id="profileEmail">Не авторизован</div>
         </div>
         <div class="profile-actions" id="profileActions">
-          <button class="auto-apply-btn" id="loginBtn" style="background:var(--accent);padding:8px 16px;">🔐 Войти</button>
+          <button class="auto-apply-btn" id="loginBtn" onclick="openAuthModal()" style="background:var(--accent);padding:8px 16px;">🔐 Войти</button>
         </div>
       </div>
     </div>
@@ -2042,10 +2042,14 @@ function openAuthModal() {
   const modal = document.getElementById('authModal');
   if (!modal) {
     console.error('authModal not found!');
+    alert('Ошибка: модальное окно не найдено');
     return;
   }
   modal.classList.add('visible');
-  document.getElementById('authEmail').focus();
+  modal.style.opacity = '1';
+  modal.style.visibility = 'visible';
+  const emailInput = document.getElementById('authEmail');
+  if (emailInput) emailInput.focus();
 }
 
 function closeAuthModal() {
@@ -2074,18 +2078,14 @@ function updateProfileUI(user) {
     avatar.textContent = '👤';
     name.textContent = user.displayName || user.email?.split('@')[0] || 'Пользователь';
     email.textContent = user.email || '';
-    actions.innerHTML = '<button class="auto-apply-btn" id="logoutBtn" style="background:var(--danger);padding:8px 16px;">🚪 Выйти</button>';
+    actions.innerHTML = '<button class="auto-apply-btn" id="logoutBtn" onclick="showLogoutConfirm()" style="background:var(--danger);padding:8px 16px;">🚪 Выйти</button>';
     header.classList.add('profile-logged-in');
-    
-    document.getElementById('logoutBtn')?.addEventListener('click', showLogoutConfirm);
   } else {
     avatar.textContent = '👤';
     name.textContent = 'Гость';
     email.textContent = 'Не авторизован';
-    actions.innerHTML = '<button class="auto-apply-btn" id="loginBtn" style="background:var(--accent);padding:8px 16px;">🔐 Войти</button>';
+    actions.innerHTML = '<button class="auto-apply-btn" id="loginBtn" onclick="openAuthModal()" style="background:var(--accent);padding:8px 16px;">🔐 Войти</button>';
     header.classList.remove('profile-logged-in');
-    
-    document.getElementById('loginBtn')?.addEventListener('click', openAuthModal);
   }
 }
 
