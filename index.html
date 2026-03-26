@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+  <title>Планер для коти 🐾</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/cursor.css"/>
+  <link rel="stylesheet" href="css/effects.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Background is now handled by CSS gradient -->
+
+  <!-- App -->
+  <div class="app" id="app">
+    <header class="header" id="header">
+      <div class="header-left">
+        <div class="time-greeting" id="timeGreeting"></div>
+        <h1 class="month-title" id="monthTitle"></h1>
+      </div>
+      <div class="header-center">
+        <div class="segmented" id="modeToggle" role="tablist">
+          <button class="seg-btn active" role="tab" data-mode="game" id="gameModeBtn"><span>👔</span><span>Таблица</span></button>
+          <button class="seg-btn" role="tab" data-mode="pro"  id="proModeBtn"><span>📋</span><span>Список</span></button>
+        </div>
+      </div>
+      <div class="header-right" style="display:flex; gap:12px; align-items:center;">
+        <button class="action-btn" id="copyMonthBtn" data-tip="Скопировать график в следующий месяц">
+          <span>⎘ Скопировать →</span>
+        </button>
+        <button class="nav-btn" id="prevMonth" aria-label="Предыдущий">‹</button>
+        <button class="nav-btn" id="nextMonth" aria-label="Следующий">›</button>
+      </div>
+    </header>
+
+    <main class="main" id="main">
+      <div class="view-game active" id="viewGame">
+        <div class="days-grid" id="daysGrid" role="list"></div>
+      </div>
+      <div class="view-pro" id="viewPro">
+        <div class="pro-table-wrap">
+          <table class="pro-table" id="proTable">
+            <thead><tr>
+              <th>День</th><th>Дата</th><th>Тип</th>
+              <th>Смена</th><th>Час.</th><th>Грязными</th><th>НДС</th><th>НДФЛ</th><th>Чисто</th>
+            </tr></thead>
+            <tbody id="proTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="view-tasks" id="viewTasks">
+        <div class="tasks-header">
+          <h2 class="tasks-title" id="tasksTitle">📋 Мои задачи</h2>
+        </div>
+        <div class="tasks-list" id="tasksList"></div>
+        <div class="tasks-add">
+          <input type="text" class="tasks-input" id="tasksInput" placeholder="Добавить задачу..."/>
+          <button class="tasks-add-btn" id="tasksAddBtn">+</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="dock" id="dock">
+    <button class="dock-btn" id="dockCharts"   data-tip="Графики 📊"><span class="dock-icon">📊</span></button>
+    <button class="dock-btn" id="dockIncome"   data-tip="Доход 💰"><span class="dock-icon">💰</span></button>
+    <button class="dock-btn" id="dockExpenses" data-tip="Расходы 🏠"><span class="dock-icon">🏠</span></button>
+    <button class="dock-btn" id="dockTasks"    data-tip="Задачи 📅"><span class="dock-icon">✅</span></button>
+    <button class="dock-btn" id="dockAuto"     data-tip="Автографик 🗓"><span class="dock-icon">🗓</span></button>
+    <button class="dock-btn" id="dockCat"      data-tip="Вспомнить котика 🐱"><span class="dock-icon">🐱</span></button>
+    <button class="dock-btn" id="dockExport"   data-tip="Экспорт 📤"><span class="dock-icon">📤</span></button>
+    <button class="dock-btn" id="dockSettings" data-tip="Настройки ⚙️"><span class="dock-icon">⚙️</span></button>
+  </nav>
+
+  <!-- Popup -->
+  <div class="popup-overlay" id="popupOverlay"></div>
+  <div class="popup" id="dayPopup" role="dialog" aria-modal="true">
+    <div class="popup-handle"></div>
+    <div class="popup-header">
+      <span class="popup-day-label" id="popupDayLabel"></span>
+      <button class="popup-close" id="popupClose">✕</button>
+    </div>
+    <div class="popup-section">
+      <div class="section-label">Тип дня</div>
+      <div class="segmented type-seg" id="dayTypeSegment"></div>
+    </div>
+    <div class="popup-section shift-section" id="shiftSection">
+      <div class="section-label">Смена</div>
+      <div class="shift-presets" id="shiftPresets">
+        <button class="shift-pill" data-shift="morning"><span class="shift-emoji">🌅</span><span class="shift-name">Утро</span><span class="shift-time">06–14</span></button>
+        <button class="shift-pill" data-shift="day"><span class="shift-emoji">☀️</span><span class="shift-name">День</span><span class="shift-time">09–18</span></button>
+        <button class="shift-pill" data-shift="evening"><span class="shift-emoji">🌆</span><span class="shift-name">Вечер</span><span class="shift-time">14–22</span></button>
+        <button class="shift-pill" data-shift="night"><span class="shift-emoji">🌙</span><span class="shift-name">Ночь</span><span class="shift-time">22–06</span></button>
+      </div>
+      <div class="custom-time" id="customTime">
+        <div class="time-row">
+          <div class="time-field"><label class="time-label">Начало</label><input class="time-input" type="time" id="startTime"/></div>
+          <div class="time-sep">→</div>
+          <div class="time-field"><label class="time-label">Конец</label><input class="time-input" type="time" id="endTime"/></div>
+          <div class="hours-badge" id="hoursBadge">0h</div>
+        </div>
+      </div>
+    </div>
+    <button class="popup-save" id="popupSave">Сохранить ✓</button>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <div class="drawer" id="drawer" role="dialog" aria-modal="true">
+    <div class="drawer-header">
+      <h2 class="drawer-title" id="drawerTitle"></h2>
+      <button class="drawer-close" id="drawerClose">✕</button>
+    </div>
+    <div class="drawer-content" id="drawerContent"></div>
+  </div>
+
+  <!-- Export popup -->
+  <div class="mini-popup" id="exportPopup">
+    <button class="mini-item" id="exportPng">🖼 PNG</button>
+    <button class="mini-item" id="exportTxt">📄 TXT</button>
+    <button class="mini-item" id="exportJson">📦 JSON</button>
+    <button class="mini-item" id="exportIcs">📅 Samsung / iCal</button>
+    <button class="mini-item" id="exportTasks">✅ Задачи</button>
+  </div>
+
+  <!-- Cat Widget -->
+  <div class="cat-widget" id="catWidget">
+    <div class="cat-speech" id="catSpeech"></div>
+    <div class="cat-wrapper">
+      <svg viewBox="0 0 200 200" class="cat-svg">
+        <!-- Ears -->
+        <polygon points="30,50 50,10 70,50" fill="#FFCC80" stroke="#373737" stroke-width="4"/>
+        <polygon points="130,50 150,10 170,50" fill="#FFCC80" stroke="#373737" stroke-width="4"/>
+        <polygon points="40,50 50,25 60,50" fill="#E57373"/>
+        <polygon points="140,50 150,25 160,50" fill="#E57373"/>
+        
+        <!-- Head -->
+        <ellipse cx="100" cy="100" rx="70" ry="60" fill="#FFCC80" stroke="#373737" stroke-width="4"/>
+        
+        <!-- Eyes -->
+        <ellipse cx="70" cy="90" rx="18" ry="20" fill="white" stroke="#373737" stroke-width="2"/>
+        <ellipse cx="130" cy="90" rx="18" ry="20" fill="white" stroke="#373737" stroke-width="2"/>
+        <circle class="pupil-left" cx="70" cy="92" r="10" fill="#373737"/>
+        <circle class="pupil-right" cx="130" cy="92" r="10" fill="#373737"/>
+        <circle cx="74" cy="88" r="4" fill="white"/>
+        <circle cx="134" cy="88" r="4" fill="white"/>
+        
+        <!-- Nose -->
+        <ellipse cx="100" cy="115" rx="8" ry="6" fill="#E57373"/>
+        
+        <!-- Mouth -->
+        <path d="M100 120 Q90 135 80 130" fill="none" stroke="#373737" stroke-width="3" stroke-linecap="round"/>
+        <path d="M100 120 Q110 135 120 130" fill="none" stroke="#373737" stroke-width="3" stroke-linecap="round"/>
+        
+        <!-- Whiskers -->
+        <line x1="40" y1="110" x2="10" y2="100" stroke="#373737" stroke-width="2"/>
+        <line x1="40" y1="120" x2="10" y2="125" stroke="#373737" stroke-width="2"/>
+        <line x1="160" y1="110" x2="190" y2="100" stroke="#373737" stroke-width="2"/>
+        <line x1="160" y1="120" x2="190" y2="125" stroke="#373737" stroke-width="2"/>
+        
+        <!-- Body -->
+        <ellipse cx="100" cy="170" rx="45" ry="30" fill="#FFCC80" stroke="#373737" stroke-width="4"/>
+        
+        <!-- Chest patch -->
+        <ellipse cx="100" cy="175" rx="25" ry="18" fill="#FFF3E0"/>
+        
+        <!-- Paws -->
+        <ellipse cx="70" cy="195" rx="15" ry="10" fill="#FFCC80" stroke="#373737" stroke-width="3"/>
+        <ellipse cx="130" cy="195" rx="15" ry="10" fill="#FFCC80" stroke="#373737" stroke-width="3"/>
+        
+        <!-- Tail -->
+        <path d="M145 170 Q180 150 175 120 Q170 100 160 110" fill="none" stroke="#FFCC80" stroke-width="15" stroke-linecap="round"/>
+        <path d="M145 170 Q180 150 175 120 Q170 100 160 110" fill="none" stroke="#373737" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <button class="cat-close" id="catClose">✕</button>
+    </div>
+  </div>
+
+  <script src="js/app.js" type="module"></script>
+</body>
+</html>

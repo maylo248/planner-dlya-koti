@@ -1,0 +1,46 @@
+/**
+ * cursor.css — V4: Premium iOS/macOS Fluid Ring Cursor
+ */
+
+ body {
+  cursor: none; /* Hide default cursor */
+}
+
+.custom-cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  width: 8px; height: 8px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s, background-color 0.2s;
+}
+
+.custom-cursor-ring {
+  position: fixed;
+  top: 0; left: 0;
+  width: 32px; height: 32px;
+  border: 2px solid var(--text-secondary);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              height 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 0.3s;
+}
+
+/* Hover States */
+.cursor-hover .custom-cursor-dot {
+  width: 0px; height: 0px;
+  opacity: 0;
+}
+
+.cursor-hover .custom-cursor-ring {
+  width: 48px; height: 48px;
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  border-width: 1px;
+}

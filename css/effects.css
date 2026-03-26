@@ -1,0 +1,262 @@
+/* ============================================================
+   EFFECTS.CSS — Particles, 3D, Trails, Ambient Animations
+   ============================================================ */
+
+/* ── Ambient Particle Canvas ─────────────────────────────── */
+#particleCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.55;
+  transition: opacity 1s ease;
+}
+
+/* ── 3D Card Tilt ────────────────────────────────────────── */
+.day-card {
+  transform-style: preserve-3d;
+  perspective: 800px;
+  will-change: transform;
+}
+
+.day-card .card-inner {
+  transition: transform 0.1s ease;
+}
+
+/* Shine overlay on 3D tilt */
+.day-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease, background 0.15s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.day-card:hover::after {
+  opacity: 1;
+}
+
+/* ── Running Kitten ──────────────────────────────────────── */
+.running-kitten {
+  position: fixed;
+  pointer-events: all;
+  z-index: 9000;
+  width: 70px;
+  height: 70px;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  cursor: none;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  transition: filter 0.2s ease;
+}
+
+.running-kitten:hover {
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.25));
+}
+
+.running-kitten .kitten-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Leg walking animations */
+@keyframes legWalkA {
+  0%   { transform: rotate(-25deg); }
+  50%  { transform: rotate(25deg); }
+  100% { transform: rotate(-25deg); }
+}
+@keyframes legWalkB {
+  0%   { transform: rotate(25deg); }
+  50%  { transform: rotate(-25deg); }
+  100% { transform: rotate(25deg); }
+}
+@keyframes tailWagWalk {
+  0%   { transform: rotate(-10deg) translateX(0); }
+  50%  { transform: rotate(20deg)  translateX(2px); }
+  100% { transform: rotate(-10deg) translateX(0); }
+}
+@keyframes tailWagSit {
+  0%   { transform: rotate(-15deg); }
+  50%  { transform: rotate(15deg); }
+  100% { transform: rotate(-15deg); }
+}
+@keyframes bodyBob {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+@keyframes eyeBlink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95%            { transform: scaleY(0.08); }
+}
+@keyframes kittenJump {
+  0%   { transform: translateY(0) scale(1); }
+  30%  { transform: translateY(-20px) scale(1.05, 0.95); }
+  60%  { transform: translateY(-10px) scale(0.95, 1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes kittenPurr {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* Walking state */
+.running-kitten[data-state="walking"] .leg-fl { animation: legWalkA 0.35s ease-in-out infinite; transform-origin: 50% 0; }
+.running-kitten[data-state="walking"] .leg-fr { animation: legWalkB 0.35s ease-in-out infinite; transform-origin: 50% 0; }
+.running-kitten[data-state="walking"] .leg-bl { animation: legWalkB 0.35s ease-in-out infinite; transform-origin: 50% 0; }
+.running-kitten[data-state="walking"] .leg-br { animation: legWalkA 0.35s ease-in-out infinite; transform-origin: 50% 0; }
+.running-kitten[data-state="walking"] .kitten-tail { animation: tailWagWalk 0.35s ease-in-out infinite; transform-origin: 5% 50%; }
+.running-kitten[data-state="walking"] .kitten-body-g { animation: bodyBob 0.35s ease-in-out infinite; }
+
+/* Sitting state */
+.running-kitten[data-state="sitting"] .kitten-tail { animation: tailWagSit 1.2s ease-in-out infinite; transform-origin: 5% 50%; }
+.running-kitten[data-state="sitting"] .kitten-eye-l,
+.running-kitten[data-state="sitting"] .kitten-eye-r { animation: eyeBlink 3s ease-in-out infinite; transform-origin: 50% 50%; }
+
+/* Surprised state */
+.running-kitten[data-state="surprised"] { animation: kittenJump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* Purring / happy state */
+.running-kitten[data-state="purring"] { animation: kittenPurr 0.3s ease-in-out infinite; }
+
+/* Speech bubble for kitten */
+.kitten-bubble {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.8) translateY(8px);
+  background: white;
+  border-radius: 14px 14px 14px 4px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10;
+  color: #1C1C1E;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.running-kitten:hover .kitten-bubble,
+.kitten-bubble.visible {
+  opacity: 1;
+  transform: translateX(-50%) scale(1) translateY(0);
+}
+
+/* ── Decorative Paw Prints (on off-day cards) ────────────── */
+.paw-decor {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 0.85rem;
+  opacity: 0.18;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  transform: rotate(25deg);
+}
+
+/* ── Note Indicator ─────────────────────────────────────── */
+.card-note-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 1;
+}
+.card-note-indicator:hover {
+  transform: scale(1.2);
+}
+
+/* ── Fantasy Theme Animations ────────────────────────────── */
+
+/* Morning: warm glow pulse on accent */
+body[data-tod="morning"] .today {
+  box-shadow: 0 0 0 2px var(--accent), 0 4px 20px var(--accent-glow), 0 0 40px rgba(255, 123, 84, 0.15);
+  animation: morningPulse 3s ease-in-out infinite;
+}
+@keyframes morningPulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--accent), 0 4px 20px var(--accent-glow); }
+  50%       { box-shadow: 0 0 0 2px var(--accent), 0 8px 32px var(--accent-glow), 0 0 50px rgba(255,180,100,0.2); }
+}
+
+/* Night: twinkling effect on header */
+body[data-tod="night"] .time-greeting {
+  animation: twinkle 2s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.9; }
+  50%       { opacity: 0.5; text-shadow: 0 0 8px var(--accent); }
+}
+
+/* ── Animated Gradient Body ──────────────────────────────── */
+body {
+  background: var(--bg-gradient, var(--bg));
+  background-size: 200% 200%;
+  animation: gradientShift 12s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Floating sparkle class (JS-spawned) ─────────────────── */
+.sparkle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2;
+  font-size: 14px;
+  animation: sparkleFly var(--dur, 3s) ease-in-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes sparkleFly {
+  0%   { opacity: 0;   transform: translateY(0)   rotate(0deg)   scale(0); }
+  20%  { opacity: 0.9; transform: translateY(-20px) rotate(45deg)  scale(1); }
+  80%  { opacity: 0.6; transform: translateY(-80px) rotate(200deg) scale(0.8); }
+  100% { opacity: 0;   transform: translateY(-120px) rotate(360deg) scale(0); }
+}
+
+/* ── Depth Layer for cards ───────────────────────────────── */
+.day-card {
+  transform-style: preserve-3d;
+}
+
+/* ── Notification badge on dock button ───────────────────── */
+.dock-btn .badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FF3B30;
+  border: 2px solid var(--surface, white);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.3); }
+}
