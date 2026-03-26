@@ -1945,17 +1945,13 @@ function initAuthEvents() {
     const logoutBtn = e.target.closest('#logoutBtn');
     
     if (loginBtn) {
-      console.log('Login clicked!');
-      e.preventDefault();
-      e.stopPropagation();
+      alert('Кнопка Войти работает!');
       openAuthModal();
       return;
     }
     
     if (logoutBtn) {
-      console.log('Logout clicked!');
-      e.preventDefault();
-      e.stopPropagation();
+      alert('Кнопка Выйти работает!');
       showLogoutConfirm();
       return;
     }
@@ -2033,18 +2029,16 @@ function initAuthEvents() {
 }
 
 function openAuthModal() {
-  console.log('openAuthModal called');
+  alert('openAuthModal вызвана!');
   const modal = document.getElementById('authModal');
-  if (!modal) {
-    console.error('authModal not found!');
-    alert('Ошибка: модальное окно не найдено');
-    return;
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    modal.classList.add('visible');
+  } else {
+    alert('Модальное окно НЕ найдено!');
   }
-  modal.classList.add('visible');
-  modal.style.opacity = '1';
-  modal.style.visibility = 'visible';
-  const emailInput = document.getElementById('authEmail');
-  if (emailInput) emailInput.focus();
 }
 
 function closeAuthModal() {
