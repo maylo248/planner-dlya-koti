@@ -41,10 +41,9 @@ async function initFirebaseAuth() {
     });
     
     isFirebaseReady = true;
-    console.log('✅ Firebase Auth готов');
     return true;
   } catch (e) {
-    console.error('❌ Firebase Auth не загрузился:', e);
+    console.error('Firebase Auth error:', e);
     return false;
   }
 }

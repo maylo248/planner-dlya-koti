@@ -38,9 +38,6 @@ function safeSetItem(key, value) {
     return true;
   } catch (e) {
     console.error(`Error saving ${key}:`, e);
-    if (e.name === 'QuotaExceededError') {
-      alert('Хранилище заполнено! Удалите старые данные или экспортируйте резервную копию.');
-    }
     return false;
   }
 }

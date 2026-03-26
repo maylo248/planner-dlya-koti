@@ -27,5 +27,3 @@ const db = getFirestore(app);
 const isConfigured = true;
 
 export { auth, db, isConfigured, app };
-
-console.log('✅ Firebase инициализирован для Планер для коти');

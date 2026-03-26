@@ -1945,13 +1945,11 @@ function initAuthEvents() {
     const logoutBtn = e.target.closest('#logoutBtn');
     
     if (loginBtn) {
-      alert('Кнопка Войти работает!');
       openAuthModal();
       return;
     }
     
     if (logoutBtn) {
-      alert('Кнопка Выйти работает!');
       showLogoutConfirm();
       return;
     }
@@ -2009,7 +2007,7 @@ function initAuthEvents() {
       }
     }
   });
-  
+   
   // Close modal on overlay click
   if (authModal) {
     authModal.addEventListener('click', (e) => {
@@ -2017,6 +2015,13 @@ function initAuthEvents() {
     });
   }
   
+  // Close button
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#authCloseBtn')) {
+      closeAuthModal();
+    }
+  });
+   
   // Escape to close
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -2029,21 +2034,23 @@ function initAuthEvents() {
 }
 
 function openAuthModal() {
-  alert('openAuthModal вызвана!');
   const modal = document.getElementById('authModal');
   if (modal) {
     modal.style.display = 'flex';
     modal.style.opacity = '1';
     modal.style.visibility = 'visible';
     modal.classList.add('visible');
-  } else {
-    alert('Модальное окно НЕ найдено!');
   }
 }
 
 function closeAuthModal() {
   const modal = document.getElementById('authModal');
-  modal.classList.remove('visible');
+  if (modal) {
+    modal.classList.remove('visible');
+    modal.style.display = '';
+    modal.style.opacity = '';
+    modal.style.visibility = '';
+  }
   document.getElementById('authEmail').value = '';
   document.getElementById('authPassword').value = '';
   document.getElementById('authName').value = '';

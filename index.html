@@ -222,12 +222,10 @@
     </div>
   </div>
 
-  <!-- Test button -->
-  <button onclick="alert('JS работает!')" style="position:fixed;top:10px;right:10px;z-index:99999;padding:10px;background:red;color:white;border:none;border-radius:8px;cursor:pointer">TEST JS</button>
-  
   <!-- Auth Modal -->
   <div class="auth-modal-overlay" id="authModal">
     <div class="auth-modal">
+      <button class="auth-close-btn" id="authCloseBtn">✕</button>
       <div class="auth-modal-title" id="authModalTitle">🔐 Вход в профиль</div>
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="login">Вход</button>
