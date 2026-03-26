@@ -30,6 +30,9 @@ async function initFirebase() {
     
     // Listen to auth state changes
     firebaseOnAuthStateChanged(auth, (user) => {
+      // Never overwrite valid user with null from Firebase
+      if (!user && currentUser) return;
+      
       currentUser = user ? {
         uid: user.uid,
         email: user.email,
@@ -68,14 +71,13 @@ export function isLoggedIn() {
 // Subscribe to auth changes
 export function onAuthChange(callback) {
   authListeners.push(callback);
-  // Call immediately only if Firebase is ready and we have a user
-  if (firebaseReady && currentUser !== null) {
+  // Call immediately if we have a user (Firebase ready or not)
+  if (currentUser !== null) {
     callback(currentUser);
   }
 }
 
 function notifyAuthChange(user) {
-  if (!firebaseReady) return; // Don't notify until Firebase is ready
   authListeners.forEach(cb => cb(user));
 }
 
