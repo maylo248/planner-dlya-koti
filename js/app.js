@@ -1179,14 +1179,25 @@ async function openDrawer(panel) {
   if (panel === 'auto')     renderAutoPanel();
   if (panel === 'settings') {
     renderSettingsPanel();
-    const user = await getCurrentUser();
-    updateProfileUI(user);
+    // Update profile UI after settings panel is rendered
+    setTimeout(async () => {
+      const user = await getCurrentUser();
+      updateProfileUI(user);
+    }, 100);
   }
   document.getElementById('drawer').classList.add('open');
   document.getElementById('drawerOverlay').classList.add('visible');
   document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
   const map = { charts:'dockCharts', income:'dockIncome', expenses:'dockExpenses', auto:'dockAuto', settings:'dockSettings' };
   if (map[panel]) document.getElementById(map[panel])?.classList.add('active');
+  
+  // Update profile UI after drawer is open
+  if (panel === 'settings') {
+    // Wait for DOM to settle
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const user = await getCurrentUser();
+    updateProfileUI(user);
+  }
 }
 
 function closeDrawer() {
