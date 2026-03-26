@@ -1,29 +1,27 @@
 /**
  * auth.js — Authentication System
- * Supports Firebase Auth with local fallback
+ * Firebase Auth with local fallback
  */
 
 import { isConfigured, auth } from './firebase-init.js';
 
-// Auth state storage
-const AUTH_STORAGE_KEY = 'planyr-auth-state';
-const USER_DATA_KEY = 'planyr-user-data';
-
+// Auth state
 let currentUser = null;
 let authListeners = [];
-let isFirebaseReady = false;
+let firebaseReady = false;
+let initPromise = null;
 
 // Firebase Auth functions
-let onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+let firebaseOnAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
     signOut, updateProfile, sendPasswordResetEmail;
 
 // Initialize Firebase Auth
-async function initFirebaseAuth() {
+async function initFirebase() {
   if (!isConfigured || !auth) return false;
   
   try {
     const authModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-    onAuthStateChanged = authModule.onAuthStateChanged;
+    firebaseOnAuthStateChanged = authModule.onAuthStateChanged;
     signInWithEmailAndPassword = authModule.signInWithEmailAndPassword;
     createUserWithEmailAndPassword = authModule.createUserWithEmailAndPassword;
     signOut = authModule.signOut;
@@ -31,7 +29,7 @@ async function initFirebaseAuth() {
     sendPasswordResetEmail = authModule.sendPasswordResetEmail;
     
     // Listen to auth state changes
-    onAuthStateChanged(auth, (user) => {
+    firebaseOnAuthStateChanged(auth, (user) => {
       currentUser = user ? {
         uid: user.uid,
         email: user.email,
@@ -40,7 +38,7 @@ async function initFirebaseAuth() {
       notifyAuthChange(currentUser);
     });
     
-    isFirebaseReady = true;
+    firebaseReady = true;
     return true;
   } catch (e) {
     console.error('Firebase Auth error:', e);
@@ -48,10 +46,16 @@ async function initFirebaseAuth() {
   }
 }
 
-// Initialize on module load
-initFirebaseAuth();
+// Start initialization
+initPromise = initFirebase();
 
-// Get current user
+// Wait for Firebase to be ready
+export async function waitForAuth() {
+  if (!initPromise) return;
+  await initPromise;
+}
+
+// Get current user (returns null if not ready yet)
 export function getCurrentUser() {
   return currentUser;
 }
@@ -64,6 +68,7 @@ export function isLoggedIn() {
 // Subscribe to auth changes
 export function onAuthChange(callback) {
   authListeners.push(callback);
+  // Call immediately if we have a user
   if (currentUser !== undefined) {
     callback(currentUser);
   }
@@ -76,6 +81,7 @@ function notifyAuthChange(user) {
 // ============== LOGIN ==============
 
 export async function login(email, password) {
+  await waitForAuth();
   if (!isConfigured || !auth) {
     return loginLocal(email, password);
   }
@@ -97,6 +103,7 @@ export async function login(email, password) {
 // ============== REGISTER ==============
 
 export async function register(email, password, displayName = '') {
+  await waitForAuth();
   if (!isConfigured || !auth) {
     return registerLocal(email, password, displayName);
   }
@@ -123,6 +130,7 @@ export async function register(email, password, displayName = '') {
 // ============== LOGOUT ==============
 
 export async function logout() {
+  await waitForAuth();
   if (!isConfigured || !auth) {
     return logoutLocal();
   }
@@ -137,26 +145,11 @@ export async function logout() {
   }
 }
 
-// ============== PASSWORD RESET ==============
-
-export async function resetPassword(email) {
-  if (!isConfigured || !auth) {
-    return { success: false, error: 'Firebase не настроен' };
-  }
-  
-  try {
-    await sendPasswordResetEmail(auth, email);
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: getErrorMessage(error.code) };
-  }
-}
-
-// ============== LOCAL FALLBACK AUTH ==============
+// ============== LOCAL FALLBACK ==============
 
 function loginLocal(email, password) {
   try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    const raw = localStorage.getItem('planyr-auth-local');
     const data = raw ? JSON.parse(raw) : { users: {} };
     
     if (!data.users[email]) {
@@ -170,7 +163,7 @@ function loginLocal(email, password) {
     
     currentUser = { email, displayName: stored.displayName };
     notifyAuthChange(currentUser);
-    saveLocalAuthState(currentUser);
+    saveLocalAuth(currentUser);
     
     return { success: true, user: currentUser };
   } catch (e) {
@@ -180,7 +173,7 @@ function loginLocal(email, password) {
 
 function registerLocal(email, password, displayName) {
   try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    const raw = localStorage.getItem('planyr-auth-local');
     const data = raw ? JSON.parse(raw) : { users: {} };
     
     if (data.users[email]) {
@@ -195,8 +188,8 @@ function registerLocal(email, password, displayName) {
     
     currentUser = { email, displayName: data.users[email].displayName };
     notifyAuthChange(currentUser);
-    saveLocalAuthState(currentUser);
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
+    saveLocalAuth(currentUser);
+    localStorage.setItem('planyr-auth-local', JSON.stringify(data));
     
     return { success: true, user: currentUser };
   } catch (e) {
@@ -207,30 +200,16 @@ function registerLocal(email, password, displayName) {
 function logoutLocal() {
   currentUser = null;
   notifyAuthChange(null);
-  localStorage.removeItem(USER_DATA_KEY);
+  localStorage.removeItem('planyr-user-data');
   return { success: true };
 }
 
-function saveLocalAuthState(user) {
+function saveLocalAuth(user) {
   try {
-    localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+    localStorage.setItem('planyr-user-data', JSON.stringify(user));
   } catch (e) {}
 }
 
-function loadLocalAuthState() {
-  try {
-    const raw = localStorage.getItem(USER_DATA_KEY);
-    if (raw) {
-      currentUser = JSON.parse(raw);
-      notifyAuthChange(currentUser);
-    }
-  } catch (e) {}
-}
-
-// Load local auth state on init
-loadLocalAuthState();
-
-// Simple hash (not secure, just for local storage)
 function hashPassword(password) {
   let hash = 0;
   for (let i = 0; i < password.length; i++) {
@@ -241,7 +220,6 @@ function hashPassword(password) {
   return hash.toString(16);
 }
 
-// Error messages
 function getErrorMessage(code) {
   const messages = {
     'auth/user-not-found': 'Пользователь не найден',
@@ -255,14 +233,4 @@ function getErrorMessage(code) {
     'auth/user-disabled': 'Аккаунт заблокирован'
   };
   return messages[code] || 'Произошла ошибка';
-}
-
-// Export auth state info
-export function getAuthInfo() {
-  return {
-    isConfigured,
-    isLoggedIn: isLoggedIn(),
-    user: currentUser,
-    isFirebaseReady
-  };
 }

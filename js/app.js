@@ -30,7 +30,7 @@ import {
 } from './expenses.js';
 import { renderChartsPanel } from './charts.js';
 import { CatCursor } from './cursor.js';
-import { login, register, logout, onAuthChange, isLoggedIn, getCurrentUser, getAuthInfo } from './auth.js';
+import { login, register, logout, onAuthChange, isLoggedIn, getCurrentUser, waitForAuth } from './auth.js';
 import {
   syncSettingsToCloud, syncDaysToCloud, syncTasksToCloud, 
   syncExpensesToCloud, syncBonusesToCloud, syncDayNotesToCloud,
@@ -854,7 +854,7 @@ function renderGameGrid() {
   
   const hint = document.createElement('div');
   hint.style.cssText = 'grid-column: 1 / -1; text-align: center; font-size: 0.75rem; color: var(--text-tertiary); padding: 8px 0 4px;';
-  hint.textContent = '💡 Удерживайте на дне чтобы добавить заметку';
+  hint.textContent = '💡 Удерживайте чтобы добавить заметку';
   grid.appendChild(hint);
 
   WEEKDAY_NAMES_UK.forEach(n => {
@@ -1927,7 +1927,7 @@ async function syncToCloud() {
 function initAuthEvents() {
   const authModal = document.getElementById('authModal');
   
-  // Auth state listener - only update UI, sync is handled in login/register
+  // Auth state listener
   onAuthChange((user) => {
     updateProfileUI(user);
   });
@@ -2175,7 +2175,7 @@ function selectImageAvatar(imageData) {
 }
 
 /* ── INIT ── */
-function init() {
+async function init() {
   applyTOD();
   setInterval(applyTOD, 5 * 60 * 1000);
   loadState();
@@ -2191,6 +2191,9 @@ function init() {
   initAuthEvents();
   buildTypeButtons();
   window.catCursorInstance = new CatCursor();
+  
+  // Wait for Firebase Auth to initialize
+  await waitForAuth();
   
   // Make auth functions global for onclick handlers
   window.openAuthModal = openAuthModal;
