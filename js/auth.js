@@ -68,13 +68,14 @@ export function isLoggedIn() {
 // Subscribe to auth changes
 export function onAuthChange(callback) {
   authListeners.push(callback);
-  // Call immediately if we have a user
-  if (currentUser !== undefined) {
+  // Call immediately only if Firebase is ready and we have a user
+  if (firebaseReady && currentUser !== null) {
     callback(currentUser);
   }
 }
 
 function notifyAuthChange(user) {
+  if (!firebaseReady) return; // Don't notify until Firebase is ready
   authListeners.forEach(cb => cb(user));
 }
 
