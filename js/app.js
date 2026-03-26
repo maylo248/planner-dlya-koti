@@ -82,7 +82,13 @@ function showCatWidget() {
     window.catCursorInstance.setEnabled(false);
   }
   
-  initCatCursor();
+  // Remove old cursor init if any
+  if (catMouseHandler) {
+    document.removeEventListener('mousemove', catMouseHandler);
+    catMouseHandler = null;
+  }
+  
+  initNyanCat();
   showRandomCatPhrase();
 }
 
@@ -103,51 +109,81 @@ function hideCatWidget() {
     catMouseHandler = null;
   }
   
+  // Reset Nyan Cat transforms
+  if (widget) {
+    widget.style.transform = '';
+    widget.classList.remove('mirrored');
+  }
+  
   if (window.catCursorInstance) {
     window.catCursorInstance.setEnabled(true);
   }
 }
 
-function initCatCursor() {
-  const maxOffset = 8;
+function initNyanCat() {
+  const widget = document.getElementById('catWidget');
+  if (!widget) return;
+  
+  // Reset any existing transforms
+  widget.style.transform = '';
+  widget.classList.remove('mirrored');
+  
+  // Track mouse position for smooth movement
+  let lastMouseX = 0;
+  let lastMouseY = 0;
+  let catX = 0;
+  let catY = 0;
+  const speed = 0.1; // Smoothing factor
   
   catMouseHandler = (e) => {
-    const widget = document.getElementById('catWidget');
-    if (!widget || !widget.classList.contains('visible')) return;
+    if (!catVisible) return;
     
-    const catRect = widget.getBoundingClientRect();
-    const catCenterX = catRect.left + catRect.width / 2;
-    const catCenterY = catRect.top + catRect.height * 0.4;
-    
-    const dx = e.clientX - catCenterX;
-    const dy = e.clientY - catCenterY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const maxDist = 150;
-    
-    let moveX = (dx / maxDist) * maxOffset;
-    let moveY = (dy / maxDist) * maxOffset;
-    
-    if (distance < maxDist) {
-      const factor = distance / maxDist;
-      moveX *= factor;
-      moveY *= factor;
-    }
-    
-    moveX = Math.max(-maxOffset, Math.min(maxOffset, moveX));
-    moveY = Math.max(-maxOffset, Math.min(maxOffset, moveY));
-    
-    const pupilLeft = document.querySelector('.cat-pupil');
-    const pupilRight = document.querySelectorAll('.cat-pupil')[1];
-    
-    if (pupilLeft) {
-      pupilLeft.style.transform = `translate(${moveX}px, ${moveY}px)`;
-    }
-    if (pupilRight) {
-      pupilRight.style.transform = `translate(${moveX}px, ${moveY}px)`;
-    }
+    // Update target position based on mouse
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
   };
   
+  // Animation loop for smooth movement
+  function animateCat() {
+    if (!catVisible) {
+      return;
+    }
+    
+    const widget = document.getElementById('catWidget');
+    if (!widget) {
+      return;
+    }
+    
+    // Smoothly move towards mouse position
+    catX += (lastMouseX - catX) * speed;
+    catY += (lastMouseY - catY) * speed;
+    
+    // Determine direction based on mouse X position relative to cat
+    if (lastMouseX < catX) {
+      widget.classList.add('mirrored'); // Face left
+    } else {
+      widget.classList.remove('mirrored'); // Face right
+    }
+    
+    // Apply position with some bounds
+    const maxX = window.innerWidth - 150;
+    const maxY = window.innerHeight - 150;
+    const constrainedX = Math.max(0, Math.min(maxX, catX - 60));
+    const constrainedY = Math.max(0, Math.min(maxY, catY - 30));
+    
+    widget.style.transform = `translate(${constrainedX}px, ${constrainedY}px)`;
+    
+    requestAnimationFrame(animateCat);
+  }
+  
+  // Start with mouse at center
+  lastMouseX = window.innerWidth / 2;
+  lastMouseY = window.innerHeight / 2;
+  catX = lastMouseX;
+  catY = lastMouseY;
+  
   document.addEventListener('mousemove', catMouseHandler);
+  requestAnimationFrame(animateCat);
 }
 
 function showRandomCatPhrase() {

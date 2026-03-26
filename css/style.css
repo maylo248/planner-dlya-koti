@@ -1513,6 +1513,36 @@ body[data-tod="night"] .history-row {
   position: relative;
   max-width: 250px;
   text-align: center;
+}
+.cat-gif {
+  width: 120px;
+  height: auto;
+  display: block;
+}
+
+/* Mirrored Nyan Cat */
+.cat-widget.mirrored .cat-gif {
+  transform: scaleX(-1);
+}
+.cat-widget.visible {
+  display: flex;
+  animation: catAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes catAppear {
+  from { opacity: 0; transform: translateY(50px) scale(0.8); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cat-speech {
+  background: white;
+  border-radius: 20px;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  position: relative;
+  max-width: 250px;
+  text-align: center;
   animation: speechPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .cat-speech::after {
