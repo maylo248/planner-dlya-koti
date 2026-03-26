@@ -2093,35 +2093,41 @@ function showAvatarPicker() {
   const existing = document.getElementById('avatarPicker');
   if (existing) existing.remove();
   
-  const avatar = document.getElementById('profileAvatar');
   const picker = document.createElement('div');
   picker.id = 'avatarPicker';
-  picker.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--glass-bg);backdrop-filter:blur(20px);border-radius:20px;padding:20px;z-index:10001;box-shadow:0 20px 60px rgba(0,0,0,0.3);min-width:300px;';
+  picker.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--glass-bg);backdrop-filter:blur(20px);border-radius:20px;padding:24px;z-index:10001;box-shadow:0 20px 60px rgba(0,0,0,0.3);min-width:320px;max-width:90vw;';
   
   picker.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h3 style="margin:0;font-size:1.1rem;">Выбери аватар</h3>
-      <button onclick="closeAvatarPicker()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;padding:4px;">✕</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="margin:0;font-size:1.2rem;font-weight:700;">Выбери аватар</h3>
+      <button onclick="closeAvatarPicker()" style="background:rgba(0,0,0,0.08);border:none;width:32px;height:32px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
-    <div style="margin-bottom:16px;">
-      <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;">Эмодзи:</div>
-      <div id="emojiGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:12px;"></div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:10px;text-transform:uppercase;">Эмодзи</div>
+      <div id="emojiGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:8px;"></div>
     </div>
-    <div>
-      <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;">Загрузить фото:</div>
-      <input type="file" id="avatarFileInput" accept="image/*" style="width:100%;padding:10px;background:rgba(0,0,0,0.05);border-radius:10px;border:none;"/>
+    <div style="border-top:1px solid rgba(0,0,0,0.08);padding-top:20px;">
+      <div style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:10px;text-transform:uppercase;">Своё фото</div>
+      <label for="avatarFileInput" style="display:block;padding:16px;background:linear-gradient(135deg, var(--accent-soft), rgba(88,86,214,0.15));border-radius:14px;border:2px dashed var(--accent);cursor:pointer;text-align:center;transition:all 0.2s;">
+        <input type="file" id="avatarFileInput" accept="image/*" style="display:none;"/>
+        <div style="font-size:2rem;margin-bottom:8px;">📷</div>
+        <div style="font-weight:600;color:var(--accent);">Загрузить фото</div>
+        <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:4px;">PNG, JPG до 5MB</div>
+      </label>
     </div>
   `;
   
   document.body.appendChild(picker);
   
   // Populate emojis
-  const emojis = ['👤', '😀', '😎', '🤓', '🦊', '🐱', '🐶', '🐰', '🦄', '🐼', '🐨', '🦁', '🐸', '🐵', '🦄', '🐲', '👑', '🌟', '💎', '🎮', '🎨', '🎵', '⚽', '🏆', '🚀', '💼', '📱', '💻', '🎯', '🎁', '🔥', '💖'];
+  const emojis = ['👤', '😀', '😎', '🤓', '🦊', '🐱', '🐶', '🐰', '🦄', '🐼', '🐨', '🦁', '🐸', '🐵', '🐲', '👑', '🌟', '💎', '🎮', '🎨', '🎵', '⚽', '🏆', '🚀', '💼', '📱', '💻', '🎯', '🎁', '🔥', '💖', '🌈'];
   const emojiGrid = picker.querySelector('#emojiGrid');
   emojis.forEach(e => {
     const btn = document.createElement('button');
     btn.textContent = e;
-    btn.style.cssText = 'width:36px;height:36px;font-size:1.3rem;border:none;background:rgba(0,0,0,0.05);border-radius:8px;cursor:pointer;';
+    btn.style.cssText = 'width:36px;height:36px;font-size:1.3rem;border:none;background:rgba(0,0,0,0.04);border-radius:10px;cursor:pointer;transition:all 0.2s;';
+    btn.onmouseover = () => btn.style.background = 'var(--accent-soft)';
+    btn.onmouseout = () => btn.style.background = 'rgba(0,0,0,0.04)';
     btn.onclick = () => selectEmojiAvatar(e);
     emojiGrid.appendChild(btn);
   });
@@ -2131,6 +2137,10 @@ function showAvatarPicker() {
   fileInput.onchange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Файл слишком большой! Максимум 5MB');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (ev) => {
         selectImageAvatar(ev.target.result);
