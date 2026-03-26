@@ -50,17 +50,6 @@ export class CatCursor {
         document.body.classList.remove('cursor-hover');
       }
     });
-
-    document.body.addEventListener('mouseleave', () => {
-      this.dot.style.opacity = '0';
-      this.ring.style.opacity = '0';
-    });
-    document.body.addEventListener('mouseenter', () => {
-      if (this.enabled) {
-        this.dot.style.opacity = '1';
-        this.ring.style.opacity = '1';
-      }
-    });
   }
 
   loop() {

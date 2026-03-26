@@ -1,10 +1,10 @@
 /**
- * cursor.css — V4: Premium iOS/macOS Fluid Ring Cursor
+ * cursor.css — V5: Fixed cursor visibility
  */
 
  body {
-  cursor: none; /* Hide default cursor */
-}
+   cursor: none;
+ }
 
 .custom-cursor-dot {
   position: fixed;
@@ -12,10 +12,11 @@
   width: 8px; height: 8px;
   background: var(--text-primary);
   border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
+  pointer-events: none !important;
+  z-index: 99999;
   transform: translate(-50%, -50%);
-  transition: width 0.2s, height 0.2s, background-color 0.2s;
+  transition: width 0.2s, height 0.2s, background-color 0.2s, opacity 0.2s;
+  mix-blend-mode: difference;
 }
 
 .custom-cursor-ring {
@@ -24,23 +25,37 @@
   width: 32px; height: 32px;
   border: 2px solid var(--text-secondary);
   border-radius: 50%;
-  pointer-events: none;
-  z-index: 9998;
+  pointer-events: none !important;
+  z-index: 99998;
   transform: translate(-50%, -50%);
   transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1),
               height 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-              border-color 0.3s;
+              border-color 0.3s,
+              opacity 0.2s;
+  mix-blend-mode: difference;
 }
 
 /* Hover States */
 .cursor-hover .custom-cursor-dot {
-  width: 0px; height: 0px;
-  opacity: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
 }
 
 .cursor-hover .custom-cursor-ring {
   width: 48px; height: 48px;
   background: var(--accent-soft);
   border-color: var(--accent);
-  border-width: 1px;
+  border-width: 2px;
+}
+
+/* Touch devices - hide cursor */
+@media (hover: none) and (pointer: coarse) {
+  .custom-cursor-dot,
+  .custom-cursor-ring {
+    display: none !important;
+  }
+  body {
+    cursor: auto;
+  }
 }
