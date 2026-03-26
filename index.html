@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/cursor.css"/>
   <link rel="stylesheet" href="css/effects.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script type="module" src="js/firebase-init.js"></script>
 </head>
 <body>
 
@@ -178,6 +179,33 @@
         <path d="M145 170 Q180 150 175 120 Q170 100 160 110" fill="none" stroke="#373737" stroke-width="4" stroke-linecap="round"/>
       </svg>
       <button class="cat-close" id="catClose">✕</button>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="auth-modal-overlay" id="authModal">
+    <div class="auth-modal">
+      <div class="auth-modal-title" id="authModalTitle">🔐 Вход в профиль</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Вход</button>
+        <button class="auth-tab" data-tab="register">Регистрация</button>
+      </div>
+      <form id="authForm">
+        <div class="auth-input-group">
+          <label>Email</label>
+          <input type="email" class="auth-input" id="authEmail" placeholder="your@email.com" required/>
+        </div>
+        <div class="auth-input-group">
+          <label>Пароль</label>
+          <input type="password" class="auth-input" id="authPassword" placeholder="Минимум 6 символов" required/>
+        </div>
+        <div class="auth-input-group" id="nameGroup" style="display:none;">
+          <label>Имя (необязательно)</label>
+          <input type="text" class="auth-input" id="authName" placeholder="Как вас называть?"/>
+        </div>
+        <button type="submit" class="auth-submit" id="authSubmit">Войти</button>
+        <div class="auth-error" id="authError"></div>
+      </form>
     </div>
   </div>
 

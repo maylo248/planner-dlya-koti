@@ -30,6 +30,7 @@ import {
 } from './expenses.js';
 import { renderChartsPanel } from './charts.js';
 import { CatCursor } from './cursor.js';
+import { login, register, logout, onAuthChange, isLoggedIn, getCurrentUser } from './auth.js';
 
 const CAT_PHRASES = [
   'Мяу! 🐱',
@@ -1518,6 +1519,19 @@ function renderSettingsPanel() {
   ).join('');
 
   c.innerHTML = `
+    <div class="settings-group" id="profileSection">
+      <div class="profile-header" id="profileHeader">
+        <div class="profile-avatar" id="profileAvatar">👤</div>
+        <div class="profile-info">
+          <div class="profile-name" id="profileName">Гость</div>
+          <div class="profile-email" id="profileEmail">Не авторизован</div>
+        </div>
+        <div class="profile-actions" id="profileActions">
+          <button class="auto-apply-btn" id="loginBtn" style="background:var(--accent);padding:8px 16px;">🔐 Войти</button>
+        </div>
+      </div>
+    </div>
+    
     <div class="settings-group">
       <div class="settings-group-label" style="display:flex;justify-content:space-between;align-items:center">
         <span>Типы работ</span>
@@ -1841,6 +1855,147 @@ function initEvents() {
   pop.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - ty0 > 80) closeDayPopup(); }, { passive:true });
 }
 
+/* ── AUTH ── */
+let authMode = 'login';
+
+function initAuthEvents() {
+  const loginBtn = document.getElementById('loginBtn');
+  const authModal = document.getElementById('authModal');
+  const authForm = document.getElementById('authForm');
+  const authTabs = document.querySelectorAll('.auth-tab');
+  const nameGroup = document.getElementById('nameGroup');
+  
+  // Auth state listener
+  onAuthChange((user) => {
+    updateProfileUI(user);
+  });
+  
+  // Open auth modal
+  if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      if (isLoggedIn()) {
+        showLogoutConfirm();
+      } else {
+        openAuthModal();
+      }
+    });
+  }
+  
+  // Auth tabs
+  authTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      authTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      authMode = tab.dataset.tab;
+      
+      if (authMode === 'register') {
+        nameGroup.style.display = 'block';
+        document.getElementById('authModalTitle').textContent = '📝 Регистрация';
+        document.getElementById('authSubmit').textContent = 'Создать аккаунт';
+      } else {
+        nameGroup.style.display = 'none';
+        document.getElementById('authModalTitle').textContent = '🔐 Вход в профиль';
+        document.getElementById('authSubmit').textContent = 'Войти';
+      }
+      document.getElementById('authError').textContent = '';
+    });
+  });
+  
+  // Auth form submit
+  if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const name = document.getElementById('authName').value.trim();
+      const errorEl = document.getElementById('authError');
+      
+      errorEl.textContent = '⏳ Загрузка...';
+      
+      if (authMode === 'login') {
+        const result = await login(email, password);
+        if (result.success) {
+          closeAuthModal();
+          showToast('Добро пожаловать! 👋');
+        } else {
+          errorEl.textContent = result.error || 'Ошибка входа';
+        }
+      } else {
+        const result = await register(email, password, name);
+        if (result.success) {
+          closeAuthModal();
+          showToast('Аккаунт создан! 🎉');
+        } else {
+          errorEl.textContent = result.error || 'Ошибка регистрации';
+        }
+      }
+    });
+  }
+  
+  // Close modal on overlay click
+  if (authModal) {
+    authModal.addEventListener('click', (e) => {
+      if (e.target === authModal) closeAuthModal();
+    });
+  }
+  
+  // Escape to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && authModal.classList.contains('visible')) {
+      closeAuthModal();
+    }
+  });
+}
+
+function openAuthModal() {
+  const modal = document.getElementById('authModal');
+  modal.classList.add('visible');
+  document.getElementById('authEmail').focus();
+}
+
+function closeAuthModal() {
+  const modal = document.getElementById('authModal');
+  modal.classList.remove('visible');
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPassword').value = '';
+  document.getElementById('authName').value = '';
+  document.getElementById('authError').textContent = '';
+}
+
+function updateProfileUI(user) {
+  const avatar = document.getElementById('profileAvatar');
+  const name = document.getElementById('profileName');
+  const email = document.getElementById('profileEmail');
+  const actions = document.getElementById('profileActions');
+  const header = document.getElementById('profileHeader');
+  
+  if (user) {
+    avatar.textContent = '👤';
+    name.textContent = user.displayName || user.email?.split('@')[0] || 'Пользователь';
+    email.textContent = user.email || '';
+    actions.innerHTML = '<button class="auto-apply-btn" id="logoutBtn" style="background:var(--danger);padding:8px 16px;">🚪 Выйти</button>';
+    header.classList.add('profile-logged-in');
+    
+    document.getElementById('logoutBtn')?.addEventListener('click', showLogoutConfirm);
+  } else {
+    avatar.textContent = '👤';
+    name.textContent = 'Гость';
+    email.textContent = 'Не авторизован';
+    actions.innerHTML = '<button class="auto-apply-btn" id="loginBtn" style="background:var(--accent);padding:8px 16px;">🔐 Войти</button>';
+    header.classList.remove('profile-logged-in');
+    
+    document.getElementById('loginBtn')?.addEventListener('click', openAuthModal);
+  }
+}
+
+function showLogoutConfirm() {
+  if (confirm('Вы уверены, что хотите выйти?')) {
+    logout();
+    showToast('До свидания! 👋');
+  }
+}
+
 /* ── INIT ── */
 function init() {
   applyTOD();
@@ -1855,6 +2010,7 @@ function init() {
   switchMode(STATE.mode);
   initEvents();
   initTasksEvents();
+  initAuthEvents();
   buildTypeButtons();
   window.catCursorInstance = new CatCursor();
   
