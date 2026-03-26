@@ -58,8 +58,21 @@ export async function waitForAuth() {
   await initPromise;
 }
 
-// Get current user (returns null if not ready yet)
-export function getCurrentUser() {
+// Get current user - check Firebase directly if available
+export async function getCurrentUser() {
+  if (isConfigured && auth && firebaseReady) {
+    try {
+      const { getIdToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+      const token = await getIdToken(auth.currentUser, false).catch(() => null);
+      if (token) {
+        return {
+          uid: auth.currentUser.uid,
+          email: auth.currentUser.email,
+          displayName: auth.currentUser.displayName
+        };
+      }
+    } catch (e) {}
+  }
   return currentUser;
 }
 

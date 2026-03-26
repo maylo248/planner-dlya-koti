@@ -1168,7 +1168,7 @@ function savePopup() {
 }
 
 /* ── DRAWER ── */
-function openDrawer(panel) {
+async function openDrawer(panel) {
   STATE.drawer = { ...STATE.drawer, open:true, panel };
   const titles = { charts:'📊 Графики', income:'💰 Доход', expenses:'🏠 Расходы', auto:'🗓 Автографик', settings:'⚙️ Настройки' };
   document.getElementById('drawerTitle').textContent = titles[panel] || '';
@@ -1179,7 +1179,8 @@ function openDrawer(panel) {
   if (panel === 'auto')     renderAutoPanel();
   if (panel === 'settings') {
     renderSettingsPanel();
-    updateProfileUI(getCurrentUser());
+    const user = await getCurrentUser();
+    updateProfileUI(user);
   }
   document.getElementById('drawer').classList.add('open');
   document.getElementById('drawerOverlay').classList.add('visible');
