@@ -129,54 +129,94 @@
     <button class="mini-item" id="exportTasks">✅ Задачи</button>
   </div>
 
-  <!-- Cat Widget -->
+  <!-- Cat Widget - Chibi Cat -->
   <div class="cat-widget" id="catWidget">
     <div class="cat-speech" id="catSpeech"></div>
     <div class="cat-wrapper">
-      <svg viewBox="0 0 200 200" class="cat-svg">
-        <!-- Ears -->
-        <polygon points="30,50 50,10 70,50" fill="#FFCC80" stroke="#373737" stroke-width="4"/>
-        <polygon points="130,50 150,10 170,50" fill="#FFCC80" stroke="#373737" stroke-width="4"/>
-        <polygon points="40,50 50,25 60,50" fill="#E57373"/>
-        <polygon points="140,50 150,25 160,50" fill="#E57373"/>
-        
-        <!-- Head -->
-        <ellipse cx="100" cy="100" rx="70" ry="60" fill="#FFCC80" stroke="#373737" stroke-width="4"/>
-        
-        <!-- Eyes -->
-        <ellipse cx="70" cy="90" rx="18" ry="20" fill="white" stroke="#373737" stroke-width="2"/>
-        <ellipse cx="130" cy="90" rx="18" ry="20" fill="white" stroke="#373737" stroke-width="2"/>
-        <circle class="pupil-left" cx="70" cy="92" r="10" fill="#373737"/>
-        <circle class="pupil-right" cx="130" cy="92" r="10" fill="#373737"/>
-        <circle cx="74" cy="88" r="4" fill="white"/>
-        <circle cx="134" cy="88" r="4" fill="white"/>
-        
-        <!-- Nose -->
-        <ellipse cx="100" cy="115" rx="8" ry="6" fill="#E57373"/>
-        
-        <!-- Mouth -->
-        <path d="M100 120 Q90 135 80 130" fill="none" stroke="#373737" stroke-width="3" stroke-linecap="round"/>
-        <path d="M100 120 Q110 135 120 130" fill="none" stroke="#373737" stroke-width="3" stroke-linecap="round"/>
-        
-        <!-- Whiskers -->
-        <line x1="40" y1="110" x2="10" y2="100" stroke="#373737" stroke-width="2"/>
-        <line x1="40" y1="120" x2="10" y2="125" stroke="#373737" stroke-width="2"/>
-        <line x1="160" y1="110" x2="190" y2="100" stroke="#373737" stroke-width="2"/>
-        <line x1="160" y1="120" x2="190" y2="125" stroke="#373737" stroke-width="2"/>
-        
-        <!-- Body -->
-        <ellipse cx="100" cy="170" rx="45" ry="30" fill="#FFCC80" stroke="#373737" stroke-width="4"/>
-        
-        <!-- Chest patch -->
-        <ellipse cx="100" cy="175" rx="25" ry="18" fill="#FFF3E0"/>
-        
-        <!-- Paws -->
-        <ellipse cx="70" cy="195" rx="15" ry="10" fill="#FFCC80" stroke="#373737" stroke-width="3"/>
-        <ellipse cx="130" cy="195" rx="15" ry="10" fill="#FFCC80" stroke="#373737" stroke-width="3"/>
+      <svg viewBox="0 0 200 240" class="cat-svg">
+        <defs>
+          <radialGradient id="eyeGradient" cx="50%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#7B68EE"/>
+            <stop offset="100%" stop-color="#4A90D9"/>
+          </radialGradient>
+        </defs>
         
         <!-- Tail -->
-        <path d="M145 170 Q180 150 175 120 Q170 100 160 110" fill="none" stroke="#FFCC80" stroke-width="15" stroke-linecap="round"/>
-        <path d="M145 170 Q180 150 175 120 Q170 100 160 110" fill="none" stroke="#373737" stroke-width="4" stroke-linecap="round"/>
+        <g class="cat-tail">
+          <path d="M150 200 Q190 180 185 140 Q180 110 175 120" fill="none" stroke="#F5F5F5" stroke-width="18" stroke-linecap="round"/>
+          <path d="M150 200 Q190 180 185 140 Q180 110 175 120" fill="none" stroke="#E0E0E0" stroke-width="20" stroke-linecap="round" stroke-dasharray="5,15"/>
+        </g>
+        
+        <!-- Body -->
+        <ellipse cx="100" cy="200" rx="50" ry="35" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="3"/>
+        
+        <!-- Chest fluff -->
+        <ellipse cx="100" cy="205" rx="30" ry="20" fill="#FAFAFA"/>
+        
+        <!-- Left Paw -->
+        <ellipse cx="70" cy="225" rx="18" ry="12" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="3"/>
+        <ellipse cx="62" cy="228" rx="6" ry="5" fill="#FFB6C1"/>
+        <ellipse cx="70" cy="230" rx="6" ry="5" fill="#FFB6C1"/>
+        <ellipse cx="78" cy="228" rx="6" ry="5" fill="#FFB6C1"/>
+        
+        <!-- Right Paw -->
+        <ellipse cx="130" cy="225" rx="18" ry="12" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="3"/>
+        <ellipse cx="122" cy="228" rx="6" ry="5" fill="#FFB6C1"/>
+        <ellipse cx="130" cy="230" rx="6" ry="5" fill="#FFB6C1"/>
+        <ellipse cx="138" cy="228" rx="6" ry="5" fill="#FFB6C1"/>
+        
+        <!-- Collar -->
+        <ellipse cx="100" cy="165" rx="35" ry="8" fill="#4A90D9"/>
+        <circle cx="100" cy="173" r="8" fill="#FFD700" stroke="#DAA520" stroke-width="2"/>
+        <ellipse cx="100" cy="173" rx="3" ry="2" fill="#FFF8DC"/>
+        
+        <!-- Head -->
+        <ellipse cx="100" cy="95" rx="75" ry="65" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="3"/>
+        
+        <!-- Left Ear -->
+        <polygon points="30,55 55,5 75,55" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="3"/>
+        <polygon points="38,50 55,18 68,50" fill="#FFB6C1"/>
+        
+        <!-- Right Ear -->
+        <polygon points="125,55 145,5 170,55" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="3"/>
+        <polygon points="132,50 145,18 162,50" fill="#FFB6C1"/>
+        
+        <!-- Left Eye -->
+        <g class="cat-eye-left">
+          <ellipse cx="65" cy="90" rx="22" ry="25" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+          <ellipse cx="65" cy="92" rx="16" ry="20" fill="url(#eyeGradient)"/>
+          <ellipse class="cat-pupil" cx="65" cy="94" rx="10" ry="13" fill="#1a1a2e"/>
+          <circle cx="58" cy="85" r="5" fill="white"/>
+          <circle cx="70" cy="98" r="3" fill="white" opacity="0.6"/>
+        </g>
+        
+        <!-- Right Eye -->
+        <g class="cat-eye-right">
+          <ellipse cx="135" cy="90" rx="22" ry="25" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+          <ellipse cx="135" cy="92" rx="16" ry="20" fill="url(#eyeGradient)"/>
+          <ellipse class="cat-pupil" cx="135" cy="94" rx="10" ry="13" fill="#1a1a2e"/>
+          <circle cx="128" cy="85" r="5" fill="white"/>
+          <circle cx="140" cy="98" r="3" fill="white" opacity="0.6"/>
+        </g>
+        
+        <!-- Blush -->
+        <ellipse cx="45" cy="115" rx="12" ry="8" fill="#FFB6C1" opacity="0.5"/>
+        <ellipse cx="155" cy="115" rx="12" ry="8" fill="#FFB6C1" opacity="0.5"/>
+        
+        <!-- Nose -->
+        <ellipse cx="100" cy="115" rx="8" ry="6" fill="#FFB6C1"/>
+        
+        <!-- Mouth -->
+        <path d="M100 120 Q92 130 85 125" fill="none" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M100 120 Q108 130 115 125" fill="none" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+        
+        <!-- Whiskers -->
+        <line x1="35" y1="108" x2="5" y2="100" stroke="#E0E0E0" stroke-width="2" stroke-linecap="round"/>
+        <line x1="35" y1="118" x2="5" y2="118" stroke="#E0E0E0" stroke-width="2" stroke-linecap="round"/>
+        <line x1="35" y1="128" x2="5" y2="136" stroke="#E0E0E0" stroke-width="2" stroke-linecap="round"/>
+        <line x1="165" y1="108" x2="195" y2="100" stroke="#E0E0E0" stroke-width="2" stroke-linecap="round"/>
+        <line x1="165" y1="118" x2="195" y2="118" stroke="#E0E0E0" stroke-width="2" stroke-linecap="round"/>
+        <line x1="165" y1="128" x2="195" y2="136" stroke="#E0E0E0" stroke-width="2" stroke-linecap="round"/>
       </svg>
       <button class="cat-close" id="catClose">✕</button>
     </div>

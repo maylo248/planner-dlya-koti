@@ -30,7 +30,14 @@ import {
 } from './expenses.js';
 import { renderChartsPanel } from './charts.js';
 import { CatCursor } from './cursor.js';
-import { login, register, logout, onAuthChange, isLoggedIn, getCurrentUser } from './auth.js';
+import { login, register, logout, onAuthChange, isLoggedIn, getCurrentUser, getAuthInfo } from './auth.js';
+import {
+  syncSettingsToCloud, syncDaysToCloud, syncTasksToCloud, 
+  syncExpensesToCloud, syncBonusesToCloud, syncDayNotesToCloud,
+  loadSettingsFromCloud, loadDaysFromCloud, loadTasksFromCloud,
+  loadExpensesFromCloud, loadBonusesFromCloud, loadDayNotesFromCloud,
+  loadAllFromCloud, syncAllToCloud, getSyncStatus, onSyncStatusChange
+} from './cloud-sync.js';
 
 const CAT_PHRASES = [
   'Мяу! 🐱',
@@ -102,20 +109,20 @@ function hideCatWidget() {
 }
 
 function initCatCursor() {
-  const maxOffset = 6;
+  const maxOffset = 8;
   
   catMouseHandler = (e) => {
     const widget = document.getElementById('catWidget');
-    if (!widget) return;
+    if (!widget || !widget.classList.contains('visible')) return;
     
     const catRect = widget.getBoundingClientRect();
     const catCenterX = catRect.left + catRect.width / 2;
-    const catCenterY = catRect.top + catRect.height / 2 - 20;
+    const catCenterY = catRect.top + catRect.height * 0.4;
     
     const dx = e.clientX - catCenterX;
     const dy = e.clientY - catCenterY;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    const maxDist = 100;
+    const maxDist = 150;
     
     let moveX = (dx / maxDist) * maxOffset;
     let moveY = (dy / maxDist) * maxOffset;
@@ -129,16 +136,14 @@ function initCatCursor() {
     moveX = Math.max(-maxOffset, Math.min(maxOffset, moveX));
     moveY = Math.max(-maxOffset, Math.min(maxOffset, moveY));
     
-    const pupilLeft = document.querySelector('.pupil-left');
-    const pupilRight = document.querySelector('.pupil-right');
+    const pupilLeft = document.querySelector('.cat-pupil');
+    const pupilRight = document.querySelectorAll('.cat-pupil')[1];
     
     if (pupilLeft) {
-      pupilLeft.setAttribute('cx', 70 + moveX);
-      pupilLeft.setAttribute('cy', 92 + moveY);
+      pupilLeft.style.transform = `translate(${moveX}px, ${moveY}px)`;
     }
     if (pupilRight) {
-      pupilRight.setAttribute('cx', 130 + moveX);
-      pupilRight.setAttribute('cy', 92 + moveY);
+      pupilRight.style.transform = `translate(${moveX}px, ${moveY}px)`;
     }
   };
   
@@ -1879,12 +1884,56 @@ function initEvents() {
 /* ── AUTH ── */
 let authMode = 'login';
 
+// Sync data from cloud
+async function syncFromCloud() {
+  showToast('⏳ Синхронизация...');
+  try {
+    const cloudData = await loadAllFromCloud();
+    if (cloudData) {
+      if (cloudData.settings) {
+        Object.assign(STATE.rates, cloudData.settings.rates || {});
+        Object.assign(STATE.taxes, cloudData.settings.taxes || {});
+        Object.assign(STATE.ndfl, cloudData.settings.ndfl || {});
+        Object.assign(STATE.rateTypes, cloudData.settings.rateTypes || {});
+        Object.assign(STATE.normHours, cloudData.settings.normHours || {});
+        Object.assign(STATE.labels, cloudData.settings.labels || {});
+        if (cloudData.settings.workTypes) STATE.workTypes = cloudData.settings.workTypes;
+      }
+      if (cloudData.tasks) STATE.tasks = cloudData.tasks;
+      if (cloudData.expenses) STATE.expenses = cloudData.expenses;
+      if (cloudData.bonuses) STATE.bonuses = cloudData.bonuses;
+      if (cloudData.dayNotes) STATE.dayNotes = cloudData.dayNotes;
+      
+      renderAll();
+      buildTypeButtons();
+      showToast('✅ Данные загружены из облака');
+    } else {
+      showToast('📱 Локальные данные');
+    }
+  } catch (e) {
+    console.error('Sync error:', e);
+    showToast('⚠️ Ошибка синхронизации');
+  }
+}
+
+// Sync data to cloud
+async function syncToCloud() {
+  try {
+    await syncAllToCloud(STATE);
+  } catch (e) {
+    console.error('Sync to cloud error:', e);
+  }
+}
+
 function initAuthEvents() {
   const authModal = document.getElementById('authModal');
   
   // Auth state listener
   onAuthChange((user) => {
     updateProfileUI(user);
+    if (user) {
+      syncFromCloud();
+    }
   });
   
   // Use event delegation for dynamically created buttons
@@ -1936,6 +1985,7 @@ function initAuthEvents() {
       if (result.success) {
         closeAuthModal();
         showToast('Добро пожаловать! 👋');
+        await syncFromCloud();
       } else {
         errorEl.textContent = result.error || 'Ошибка входа';
       }
@@ -1943,7 +1993,8 @@ function initAuthEvents() {
       const result = await register(email, password, name);
       if (result.success) {
         closeAuthModal();
-        showToast('Аккаунт создан! 🎉');
+        showToast('Аккаунт создан! 🎉 Данные синхронизируются в облаке');
+        await syncToCloud();
       } else {
         errorEl.textContent = result.error || 'Ошибка регистрации';
       }
@@ -2011,6 +2062,7 @@ function updateProfileUI(user) {
 
 function showLogoutConfirm() {
   if (confirm('Вы уверены, что хотите выйти?')) {
+    syncToCloud();
     logout();
     showToast('До свидания! 👋');
   }

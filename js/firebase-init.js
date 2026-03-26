@@ -1,20 +1,18 @@
 /**
- * Firebase Configuration
+ * firebase-init.js — Firebase Configuration
  * 
- * TO SET UP FIREBASE:
- * 1. Go to https://console.firebase.google.com/
- * 2. Create a new project
- * 3. Add a web app to the project
- * 4. Copy the firebaseConfig object below
- * 5. Enable Authentication (Email/Password) in Firebase Console
- * 6. Enable Firestore Database in Firebase Console
+ * НАСТРОЙКА:
+ * 1. Создай проект на https://console.firebase.google.com/
+ * 2. Зарегистрируй веб-приложение
+ * 3. Скопируй firebaseConfig оттуда
+ * 4. Включи Authentication (Email/Password) и Firestore Database
  */
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-// Replace this config with your own from Firebase Console
+// ⚠️ ЗАМЕНИ ЭТИ ЗНАЧЕНИЯ НА СВОИ ИЗ FIREBASE CONSOLE
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -24,15 +22,24 @@ const firebaseConfig = {
   appId: "YOUR_APP_ID"
 };
 
-// Check if Firebase is configured
+// Проверка настроек
 const isConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
 
-let app, auth, db;
+let app = null;
+let auth = null;
+let db = null;
 
 if (isConfigured) {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    console.log('✅ Firebase инициализирован');
+  } catch (error) {
+    console.error('❌ Ошибка инициализации Firebase:', error);
+  }
+} else {
+  console.log('⚠️ Firebase не настроен. Данные сохраняются локально.');
 }
 
-export { auth, db, isConfigured };
+export { auth, db, isConfigured, app };
