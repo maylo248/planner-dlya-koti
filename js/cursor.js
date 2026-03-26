@@ -1,5 +1,5 @@
 /**
- * cursor.js — V4: Premium iOS/macOS Fluid Ring Cursor
+ * cursor.js — V6: Robust cursor with fallback
  */
 
 export class CatCursor {
@@ -9,6 +9,7 @@ export class CatCursor {
     this.ring = document.createElement('div');
     this.ring.className = 'custom-cursor-ring';
     this.enabled = true;
+    this.isVisible = false;
 
     document.body.appendChild(this.dot);
     document.body.appendChild(this.ring);
@@ -24,41 +25,65 @@ export class CatCursor {
 
   setEnabled(enabled) {
     this.enabled = enabled;
-    this.dot.style.display = enabled ? 'block' : 'none';
-    this.ring.style.display = enabled ? 'block' : 'none';
+    if (enabled) {
+      this.dot.style.opacity = '1';
+      this.ring.style.opacity = '1';
+    } else {
+      this.dot.style.opacity = '0';
+      this.ring.style.opacity = '0';
+    }
   }
 
   initEvents() {
     window.addEventListener('mousemove', e => {
       this.mouseX = e.clientX;
       this.mouseY = e.clientY;
-      if (this.enabled) {
-        this.dot.style.transform = `translate(calc(${this.mouseX}px - 50%), calc(${this.mouseY}px - 50%))`;
+      
+      if (!this.isVisible) {
+        this.isVisible = true;
+        this.dot.style.opacity = '1';
+        this.ring.style.opacity = '1';
       }
+      
+      this.dot.style.transform = `translate(${this.mouseX}px, ${this.mouseY}px) translate(-50%, -50%)`;
     }, { passive: true });
 
     const interactiveSelectors = 'button, a, input, [role="button"], [role="tab"], [tabindex="0"], .day-card, .pro-type-badge, .shift-pill, .seg-btn, .mini-item';
     
-    document.body.addEventListener('mouseover', e => {
+    document.addEventListener('mouseover', e => {
       if (e.target.closest(interactiveSelectors)) {
-        document.body.classList.add('cursor-hover');
+        this.dot.classList.add('cursor-dot-hover');
+        this.ring.classList.add('cursor-ring-hover');
       }
     });
 
-    document.body.addEventListener('mouseout', e => {
+    document.addEventListener('mouseout', e => {
       if (e.target.closest(interactiveSelectors)) {
-        document.body.classList.remove('cursor-hover');
+        this.dot.classList.remove('cursor-dot-hover');
+        this.ring.classList.remove('cursor-ring-hover');
       }
+    });
+    
+    document.addEventListener('mouseleave', () => {
+      this.isVisible = false;
+      this.dot.style.opacity = '0';
+      this.ring.style.opacity = '0';
+    });
+    
+    document.addEventListener('mouseenter', () => {
+      this.isVisible = true;
+      this.dot.style.opacity = '1';
+      this.ring.style.opacity = '1';
     });
   }
 
   loop() {
-    const lerp = 0.25;
+    const lerp = 0.2;
     this.ringX += (this.mouseX - this.ringX) * lerp;
     this.ringY += (this.mouseY - this.ringY) * lerp;
 
     if (this.enabled) {
-      this.ring.style.transform = `translate(calc(${this.ringX}px - 50%), calc(${this.ringY}px - 50%))`;
+      this.ring.style.transform = `translate(${this.ringX}px, ${this.ringY}px) translate(-50%, -50%)`;
     }
 
     requestAnimationFrame(() => this.loop());

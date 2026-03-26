@@ -1,61 +1,82 @@
 /**
- * cursor.css — V5: Fixed cursor visibility
+ * cursor.css — V6: Robust cursor with default fallback
  */
 
- body {
-   cursor: none;
- }
+/* Default cursor on interactive elements */
+button, a, input, select, textarea, [role="button"], [role="tab"], [tabindex="0"], .day-card, .pro-type-badge, .shift-pill, .seg-btn, .mini-item {
+  cursor: auto;
+}
+
+/* Hide default cursor only on non-interactive areas */
+body:not(:has(button:hover)):not(:has(a:hover)) {
+  cursor: none;
+}
+
+/* Fallback: always show default cursor after 3 seconds if custom cursor never appeared */
+@keyframes cursorTimeout {
+  0%, 99% { cursor: none; }
+  100% { cursor: auto; }
+}
 
 .custom-cursor-dot {
   position: fixed;
   top: 0; left: 0;
-  width: 8px; height: 8px;
-  background: var(--text-primary);
+  width: 10px; height: 10px;
+  background: #333;
   border-radius: 50%;
   pointer-events: none !important;
   z-index: 99999;
   transform: translate(-50%, -50%);
-  transition: width 0.2s, height 0.2s, background-color 0.2s, opacity 0.2s;
-  mix-blend-mode: difference;
+  transition: transform 0.1s linear, width 0.2s, height 0.2s, background 0.2s;
+  will-change: transform;
 }
 
 .custom-cursor-ring {
   position: fixed;
   top: 0; left: 0;
-  width: 32px; height: 32px;
-  border: 2px solid var(--text-secondary);
+  width: 36px; height: 36px;
+  border: 2px solid rgba(0, 122, 255, 0.6);
   border-radius: 50%;
   pointer-events: none !important;
   z-index: 99998;
   transform: translate(-50%, -50%);
-  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-              height 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-              border-color 0.3s,
-              opacity 0.2s;
-  mix-blend-mode: difference;
+  transition: transform 0.1s linear, width 0.3s, height 0.3s, background 0.3s, border-color 0.3s;
+  will-change: transform;
 }
 
-/* Hover States */
-.cursor-hover .custom-cursor-dot {
-  width: 12px;
-  height: 12px;
-  background: var(--accent);
+/* Hover States - when over buttons */
+.custom-cursor-dot.cursor-dot-hover {
+  width: 14px;
+  height: 14px;
+  background: var(--accent, #007AFF);
 }
 
-.cursor-hover .custom-cursor-ring {
-  width: 48px; height: 48px;
-  background: var(--accent-soft);
-  border-color: var(--accent);
+.custom-cursor-ring.cursor-ring-hover {
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 122, 255, 0.15);
+  border-color: var(--accent, #007AFF);
   border-width: 2px;
 }
 
-/* Touch devices - hide cursor */
+/* Touch devices - hide custom cursor */
 @media (hover: none) and (pointer: coarse) {
   .custom-cursor-dot,
   .custom-cursor-ring {
     display: none !important;
   }
-  body {
-    cursor: auto;
+  * {
+    cursor: auto !important;
+  }
+}
+
+/* Small screens */
+@media (max-width: 768px) {
+  .custom-cursor-dot,
+  .custom-cursor-ring {
+    display: none !important;
+  }
+  * {
+    cursor: auto !important;
   }
 }
