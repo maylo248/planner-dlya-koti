@@ -1939,12 +1939,27 @@ function initAuthEvents() {
   // Use event delegation for dynamically created buttons
   document.addEventListener('click', (e) => {
     // Login/Logout button in profile section
-    if (e.target.closest('#loginBtn') || e.target.closest('#logoutBtn')) {
+    const loginBtn = e.target.closest('#loginBtn');
+    const logoutBtn = e.target.closest('#logoutBtn');
+    
+    if (loginBtn) {
+      console.log('Login button clicked!');
       if (isLoggedIn()) {
         showLogoutConfirm();
       } else {
         openAuthModal();
       }
+      return;
+    }
+    
+    if (logoutBtn) {
+      console.log('Logout button clicked!');
+      if (isLoggedIn()) {
+        showLogoutConfirm();
+      } else {
+        openAuthModal();
+      }
+      return;
     }
     
     // Auth tabs
@@ -2020,7 +2035,12 @@ function initAuthEvents() {
 }
 
 function openAuthModal() {
+  console.log('openAuthModal called');
   const modal = document.getElementById('authModal');
+  if (!modal) {
+    console.error('authModal not found!');
+    return;
+  }
   modal.classList.add('visible');
   document.getElementById('authEmail').focus();
 }
