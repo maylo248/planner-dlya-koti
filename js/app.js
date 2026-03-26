@@ -2064,8 +2064,13 @@ function updateProfileUI(user) {
   if (!drawer || !drawer.classList.contains('open')) return;
   if (!avatar || !name || !email || !actions || !header) return;
   
+  // Get saved avatar
+  const savedAvatar = localStorage.getItem('planyr-user-avatar') || '👤';
+  
   if (user) {
-    avatar.textContent = '👤';
+    avatar.textContent = savedAvatar;
+    avatar.onclick = () => showAvatarPicker();
+    avatar.style.cursor = 'pointer';
     name.textContent = user.displayName || user.email?.split('@')[0] || 'Пользователь';
     email.textContent = user.email || '';
     actions.innerHTML = '<button class="auto-apply-btn" id="logoutBtn" onclick="showLogoutConfirm()" style="background:var(--danger);padding:8px 16px;">🚪 Выйти</button>';
@@ -2084,6 +2089,82 @@ function showLogoutConfirm() {
     syncToCloud();
     logout();
   }
+}
+
+function showAvatarPicker() {
+  // Remove existing picker
+  const existing = document.getElementById('avatarPicker');
+  if (existing) existing.remove();
+  
+  const avatar = document.getElementById('profileAvatar');
+  const picker = document.createElement('div');
+  picker.id = 'avatarPicker';
+  picker.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--glass-bg);backdrop-filter:blur(20px);border-radius:20px;padding:20px;z-index:10001;box-shadow:0 20px 60px rgba(0,0,0,0.3);min-width:300px;';
+  
+  picker.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="margin:0;font-size:1.1rem;">Выбери аватар</h3>
+      <button onclick="closeAvatarPicker()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;padding:4px;">✕</button>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;">Эмодзи:</div>
+      <div id="emojiGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:12px;"></div>
+    </div>
+    <div>
+      <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;">Загрузить фото:</div>
+      <input type="file" id="avatarFileInput" accept="image/*" style="width:100%;padding:10px;background:rgba(0,0,0,0.05);border-radius:10px;border:none;"/>
+    </div>
+  `;
+  
+  document.body.appendChild(picker);
+  
+  // Populate emojis
+  const emojis = ['👤', '😀', '😎', '🤓', '🦊', '🐱', '🐶', '🐰', '🦄', '🐼', '🐨', '🦁', '🐸', '🐵', '🦄', '🐲', '👑', '🌟', '💎', '🎮', '🎨', '🎵', '⚽', '🏆', '🚀', '💼', '📱', '💻', '🎯', '🎁', '🔥', '💖'];
+  const emojiGrid = picker.querySelector('#emojiGrid');
+  emojis.forEach(e => {
+    const btn = document.createElement('button');
+    btn.textContent = e;
+    btn.style.cssText = 'width:36px;height:36px;font-size:1.3rem;border:none;background:rgba(0,0,0,0.05);border-radius:8px;cursor:pointer;';
+    btn.onclick = () => selectEmojiAvatar(e);
+    emojiGrid.appendChild(btn);
+  });
+  
+  // File input handler
+  const fileInput = picker.querySelector('#avatarFileInput');
+  fileInput.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        selectImageAvatar(ev.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+}
+
+function closeAvatarPicker() {
+  const picker = document.getElementById('avatarPicker');
+  if (picker) picker.remove();
+}
+
+function selectEmojiAvatar(emoji) {
+  localStorage.setItem('planyr-user-avatar', emoji);
+  const avatar = document.getElementById('profileAvatar');
+  if (avatar) avatar.textContent = emoji;
+  closeAvatarPicker();
+}
+
+function selectImageAvatar(imageData) {
+  localStorage.setItem('planyr-user-avatar', imageData);
+  const avatar = document.getElementById('profileAvatar');
+  if (avatar) {
+    avatar.textContent = '';
+    avatar.style.backgroundImage = `url(${imageData})`;
+    avatar.style.backgroundSize = 'cover';
+    avatar.style.backgroundPosition = 'center';
+  }
+  closeAvatarPicker();
 }
 
 /* ── INIT ── */
@@ -2108,6 +2189,7 @@ function init() {
   window.openAuthModal = openAuthModal;
   window.closeAuthModal = closeAuthModal;
   window.showLogoutConfirm = showLogoutConfirm;
+  window.closeAvatarPicker = closeAvatarPicker;
   
   const catCloseBtn = document.getElementById('catClose');
   if (catCloseBtn) {
