@@ -1939,29 +1939,24 @@ function initAuthEvents() {
     }
   });
   
-  // Use event delegation for dynamically created buttons
+  // Direct event listener for login button
   document.addEventListener('click', (e) => {
-    // Login/Logout button in profile section
     const loginBtn = e.target.closest('#loginBtn');
     const logoutBtn = e.target.closest('#logoutBtn');
     
     if (loginBtn) {
-      console.log('Login button clicked!');
-      if (isLoggedIn()) {
-        showLogoutConfirm();
-      } else {
-        openAuthModal();
-      }
+      console.log('Login clicked!');
+      e.preventDefault();
+      e.stopPropagation();
+      openAuthModal();
       return;
     }
     
     if (logoutBtn) {
-      console.log('Logout button clicked!');
-      if (isLoggedIn()) {
-        showLogoutConfirm();
-      } else {
-        openAuthModal();
-      }
+      console.log('Logout clicked!');
+      e.preventDefault();
+      e.stopPropagation();
+      showLogoutConfirm();
       return;
     }
     
@@ -2114,6 +2109,11 @@ function init() {
   initAuthEvents();
   buildTypeButtons();
   window.catCursorInstance = new CatCursor();
+  
+  // Make auth functions global for onclick handlers
+  window.openAuthModal = openAuthModal;
+  window.closeAuthModal = closeAuthModal;
+  window.showLogoutConfirm = showLogoutConfirm;
   
   const catCloseBtn = document.getElementById('catClose');
   if (catCloseBtn) {
