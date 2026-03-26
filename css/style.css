@@ -823,17 +823,18 @@ body[data-tod="night"] .rate-toggle-slider {
 }
 
 .work-emoji-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
   background: var(--glass-bg);
   border: var(--glass-border);
-  font-size: 1.4rem;
+  font-size: 1.8rem;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 .work-emoji-btn:hover {
   transform: scale(1.1);
