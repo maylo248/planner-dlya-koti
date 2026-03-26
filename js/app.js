@@ -1909,13 +1909,9 @@ async function syncFromCloud() {
       
       renderAll();
       buildTypeButtons();
-      showToast('✅ Данные загружены из облака');
-    } else {
-      showToast('📱 Локальные данные');
     }
   } catch (e) {
     console.error('Sync error:', e);
-    showToast('⚠️ Ошибка синхронизации');
   }
 }
 
@@ -1991,7 +1987,6 @@ function initAuthEvents() {
       const result = await login(email, password);
       if (result.success) {
         closeAuthModal();
-        showToast('Добро пожаловать! 👋');
         await syncFromCloud();
       } else {
         errorEl.textContent = result.error || 'Ошибка входа';
@@ -2000,7 +1995,6 @@ function initAuthEvents() {
       const result = await register(email, password, name);
       if (result.success) {
         closeAuthModal();
-        showToast('Аккаунт создан! 🎉 Данные синхронизируются в облаке');
         await syncToCloud();
       } else {
         errorEl.textContent = result.error || 'Ошибка регистрации';
@@ -2089,7 +2083,6 @@ function showLogoutConfirm() {
   if (confirm('Вы уверены, что хотите выйти?')) {
     syncToCloud();
     logout();
-    showToast('До свидания! 👋');
   }
 }
 

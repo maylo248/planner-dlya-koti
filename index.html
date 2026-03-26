@@ -223,9 +223,9 @@
   </div>
 
   <!-- Auth Modal -->
-  <div class="auth-modal-overlay" id="authModal">
+  <div class="auth-modal-overlay" id="authModal" onclick="if(event.target===this)closeAuthModal()">
     <div class="auth-modal">
-      <button class="auth-close-btn" id="authCloseBtn">✕</button>
+      <button class="auth-close-btn" id="authCloseBtn" onclick="closeAuthModal()">✕</button>
       <div class="auth-modal-title" id="authModalTitle">🔐 Вход в профиль</div>
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="login">Вход</button>
