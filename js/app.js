@@ -104,11 +104,6 @@ function hideCatWidget() {
     catTimeout = null;
   }
   
-  if (catMouseHandler) {
-    document.removeEventListener('mousemove', catMouseHandler);
-    catMouseHandler = null;
-  }
-  
   // Reset Nyan Cat transforms
   if (widget) {
     widget.style.transform = '';
@@ -128,22 +123,79 @@ function initNyanCat() {
   widget.style.transform = '';
   widget.classList.remove('mirrored');
   
-  // Track mouse position for smooth movement
-  let lastMouseX = 0;
-  let lastMouseY = 0;
-  let catX = 0;
-  let catY = 0;
-  const speed = 0.1; // Smoothing factor
+  // Nyan Cat state
+  let catX = 0; // X position (0 = left edge)
+  let catY = window.innerHeight - 120; // Y position (bottom of screen)
+  let direction = Math.random() > 0.5 ? 1 : -1; // 1 = right, -1 = left
+  let speed = 2 + Math.random() * 3; // Random speed between 2-5 px/frame
+  let jumpState = 0; // 0 = grounded, 1 = jumping up, 2 = falling down
+  let jumpHeight = 0;
+  const jumpPower = 15;
+  const gravity = 0.8;
+  const groundY = window.innerHeight - 120;
+  let lastMeow = 0;
+  let meowInterval = 5000 + Math.random() * 10000; // 5-15 seconds between meows
+  let lastJump = 0;
+  let jumpInterval = 8000 + Math.random() * 12000; // 8-20 seconds between jumps
   
-  catMouseHandler = (e) => {
+  // Update meow and jump intervals
+  function updateTimers() {
+    meowInterval = 5000 + Math.random() * 10000; // 5-15 seconds
+    jumpInterval = 8000 + Math.random() * 12000; // 8-20 seconds
+  }
+  
+  // Check boundaries and reverse direction if needed
+  function checkBounds() {
+    if (catX <= 0 && direction === -1) {
+      direction = 1;
+      widget.classList.remove('mirrored'); // Face right
+    } else if (catX >= window.innerWidth - 120 && direction === 1) {
+      direction = -1;
+      widget.classList.add('mirrored'); // Face left
+    }
+  }
+  
+  // Handle jumping physics
+  function updateJump() {
+    if (jumpState === 0) {
+      // Grounded - check if we should jump
+      if (Date.now() - lastJump > jumpInterval) {
+        jumpState = 1;
+        jumpHeight = 0;
+        lastJump = Date.now();
+      }
+    } else if (jumpState === 1) {
+      // Jumping up
+      jumpHeight -= jumpPower;
+      if (jumpHeight <= -80) { // Jump height limit
+        jumpState = 2; // Start falling
+      }
+    } else if (jumpState === 2) {
+      // Falling down
+      jumpHeight += gravity * 2;
+      if (jumpHeight >= 0) {
+        jumpHeight = 0;
+        jumpState = 0; // Back to ground
+        updateTimers(); // Set new jump interval
+      }
+    }
+    
+    // Apply jump to Y position
+    catY = groundY + jumpHeight;
+  }
+  
+  // Handle meowing and talking
+  function updateSpeech() {
     if (!catVisible) return;
     
-    // Update target position based on mouse
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-  };
+    if (Date.now() - lastMeow > meowInterval) {
+      showRandomCatPhrase();
+      lastMeow = Date.now();
+      updateTimers(); // Set new meow interval
+    }
+  }
   
-  // Animation loop for smooth movement
+  // Animation loop
   function animateCat() {
     if (!catVisible) {
       return;
@@ -154,35 +206,25 @@ function initNyanCat() {
       return;
     }
     
-    // Smoothly move towards mouse position
-    catX += (lastMouseX - catX) * speed;
-    catY += (lastMouseY - catY) * speed;
+    // Update position
+    catX += direction * speed;
     
-    // Determine direction based on mouse X position relative to cat
-    if (lastMouseX < catX) {
-      widget.classList.add('mirrored'); // Face left
-    } else {
-      widget.classList.remove('mirrored'); // Face right
-    }
+    // Check bounds and reverse if needed
+    checkBounds();
     
-    // Apply position with some bounds
-    const maxX = window.innerWidth - 150;
-    const maxY = window.innerHeight - 150;
-    const constrainedX = Math.max(0, Math.min(maxX, catX - 60));
-    const constrainedY = Math.max(0, Math.min(maxY, catY - 30));
+    // Update jump
+    updateJump();
     
-    widget.style.transform = `translate(${constrainedX}px, ${constrainedY}px)`;
+    // Update speech
+    updateSpeech();
+    
+    // Apply transforms
+    widget.style.transform = `translate(${catX}px, ${catY}px)`;
     
     requestAnimationFrame(animateCat);
   }
   
-  // Start with mouse at center
-  lastMouseX = window.innerWidth / 2;
-  lastMouseY = window.innerHeight / 2;
-  catX = lastMouseX;
-  catY = lastMouseY;
-  
-  document.addEventListener('mousemove', catMouseHandler);
+  // Start animation
   requestAnimationFrame(animateCat);
 }
 
