@@ -1927,12 +1927,9 @@ async function syncToCloud() {
 function initAuthEvents() {
   const authModal = document.getElementById('authModal');
   
-  // Auth state listener
+  // Auth state listener - only update UI, sync is handled in login/register
   onAuthChange((user) => {
     updateProfileUI(user);
-    if (user) {
-      syncFromCloud();
-    }
   });
   
   // Direct event listener for login button
