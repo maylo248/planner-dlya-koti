@@ -1177,7 +1177,10 @@ function openDrawer(panel) {
   if (panel === 'income')   renderIncomePanel();
   if (panel === 'expenses') renderExpensesPanel();
   if (panel === 'auto')     renderAutoPanel();
-  if (panel === 'settings') renderSettingsPanel();
+  if (panel === 'settings') {
+    renderSettingsPanel();
+    updateProfileUI(getCurrentUser());
+  }
   document.getElementById('drawer').classList.add('open');
   document.getElementById('drawerOverlay').classList.add('visible');
   document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
@@ -2055,13 +2058,16 @@ function closeAuthModal() {
 }
 
 function updateProfileUI(user) {
+  // Check if elements exist in DOM
   const avatar = document.getElementById('profileAvatar');
   const name = document.getElementById('profileName');
   const email = document.getElementById('profileEmail');
   const actions = document.getElementById('profileActions');
   const header = document.getElementById('profileHeader');
   
-  // If elements don't exist yet, skip
+  // Only update if drawer is open
+  const drawer = document.getElementById('drawer');
+  if (!drawer || !drawer.classList.contains('open')) return;
   if (!avatar || !name || !email || !actions || !header) return;
   
   if (user) {
